@@ -218,26 +218,44 @@ namespace EQ_Inventory_Parser
 
         private void B_Details_Click(object sender, EventArgs e)
         {
-            Directory = "C:\\EverQuest";
+            String URL = "";
+            
+            //Check to ensure an item is selected on the Listview of the active Tabpage
+            if (SelectedType.Controls.OfType<ListView>().First().SelectedItems.Count > 0)
+            {
+                //Check to ensure the selected item is not an empty slot, if it is throw a notification the user is dumb
+                if (SelectedType.Controls.OfType<ListView>().First().SelectedItems[0].Text == "000000")
+                    MessageBox.Show("There is no item in this slot to show details for...", "Oops...", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+                //If not, put the ItemID into a string and open the url for that item id on EQitems with the default browser.
+                else
+                {
+                    String ItemID = SelectedType.Controls
+                        .OfType<ListView>()
+                        .First()
+                        .SelectedItems[0].Text;
 
-            AddCharacterPage("Beimeith", "Xegony", "Machin Shin", Directory);
-            ParseFile("Beimeith", null, "Inventory", Directory);
-            ParseFile("Beimeith", null, "RealEstate", Directory);
-            ParseFile("Beimeith", null, "GuildBank", Directory);
-            ParseFile("Beimeith", "Machin Shin", "GuildRealEstate", Directory);
+                    String ItemName = SelectedType.Controls
+                        .OfType<ListView>()
+                        .First()
+                        .SelectedItems[0].SubItems[1].Text;
 
-         //   MessageBox.Show("");
+                    if (DD_Item_Search.SelectedItem.ToString() == "EQ Items")
+                        URL = "http://items.sodeq.org/item.php?id=" + ItemID;
+                    else if (DD_Item_Search.SelectedItem.ToString() == "EQ Resource")
+                        URL = "http://items.eqresource.com/items.php?id=" + ItemID;
+                    else if (DD_Item_Search.SelectedItem.ToString() == "Lucy")
+                        URL = "http://lucy.allakhazam.com/item.html?id=" + ItemID;
+                    else if (DD_Item_Search.SelectedItem.ToString() == "Allakhazam")
+                        URL = "http://everquest.allakhazam.com/search.html?q=" + ItemName;
 
-            AddCharacterPage("Zephrina", "Xegony", "Machin Shin", Directory);
-            ParseFile("Zephrina", null, "Inventory", Directory);
-            ParseFile("Zephrina", null, "RealEstate", Directory);
-            ParseFile("Zephrina", null, "GuildBank", Directory);
-            ParseFile("Zephrina", "Machin Shin", "GuildRealEstate", Directory);
+                    System.Diagnostics.Process.Start(URL);
+                }
+            }
 
-            foreach (TabPage tp in SelectedCharacter.Controls.OfType<TabControl>().First().TabPages)
-                tp.Controls.OfType<ListView>().First().AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
-
+            
         }
+
+        #region Parsing
 
         public void ParseFile(string CharacterName, string GuildName, string Type, string EQDirectory)
         {
@@ -286,15 +304,22 @@ namespace EQ_Inventory_Parser
             Line = sr.ReadLine();
             Line = sr.ReadLine();
 
+            //Create a list of which item slots will go into the Gear Tab. 
             List<string> Gear = new List<string> { "Charm", "Ear", "Head", "Face", "Neck", "Shoulders", "Arms", "Back", "Wrist", "Range", "Hands",
             "Primary", "Fingers", "Chest", "Legs", "Feet", "Waist", "Power Source", "Secondary", "Ammo", "Held"};
 
+            //Create an Empty Listview Variable, must be done outside the while statement.
             var lv = (ListView)null;
+            bool AddLine = true;
+            //While there is a line to parse,
             while (Line != null)
             {
+                //Check the Regex for the line,
                 MyMatch = ParseInventory.Match(Line);
+                //Check the line against the list of Gear item slots
                 int count = Gear.Count(w => MyMatch.Groups[1].Value.Contains(w));
 
+                //If the line contains one of the items in the list, set the listview variable to the Gear listview.
                 if (Gear.Any(MyMatch.Groups[1].Value.Contains))
                     lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[0].Controls.OfType<ListView>().First();
                 else if (MyMatch.Groups[1].Value.Contains("General"))
@@ -304,17 +329,27 @@ namespace EQ_Inventory_Parser
                 else if (MyMatch.Groups[1].Value.Contains("Shared"))
                     lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[3].Controls.OfType<ListView>().First();
 
-
-                ListViewItem Test = new ListViewItem();
-                Test.Text = MyMatch.Groups[3].Value.PadLeft(6, '0');
-                Test.SubItems.Add(MyMatch.Groups[2].Value);
-                Test.SubItems.Add(MyMatch.Groups[4].Value);
-                Test.SubItems.Add(MyMatch.Groups[5].Value);
-                Test.SubItems.Add(MyMatch.Groups[1].Value);
-
-                lv.Items.Add(Test);
                 
+
+                ListViewItem Item = new ListViewItem();
+                Item.Text = MyMatch.Groups[3].Value.PadLeft(6, '0');
+                Item.SubItems.Add(MyMatch.Groups[2].Value);
+                Item.SubItems.Add(MyMatch.Groups[4].Value);
+                Item.SubItems.Add(MyMatch.Groups[5].Value);
+                Item.SubItems.Add(MyMatch.Groups[1].Value);
+
                 Line = sr.ReadLine();
+
+                //If the option to hide empty slots is enabled, check if the ItemID is 000000, if it is, set the AddLine variable to false. 
+                if (Options.HideEmpty)
+                    if (Item.Text == "000000")
+                        AddLine = false;
+
+                if (AddLine)
+                    lv.Items.Add(Item);
+
+                //Reset AddLine variable 
+                AddLine = true;
             }
         }
 
@@ -330,21 +365,31 @@ namespace EQ_Inventory_Parser
                 MyMatch = ParseRealEstate.Match(Line);
 
                 var lv = (ListView)null;
+                bool AddLine = true;
                 lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[4].Controls.OfType<ListView>().First();
 
 
-                ListViewItem Test = new ListViewItem();
-                Test.Text = MyMatch.Groups[6].Value.PadLeft(6, '0');
-                Test.SubItems.Add(MyMatch.Groups[3].Value);
-                Test.SubItems.Add(MyMatch.Groups[7].Value);
-                Test.SubItems.Add(MyMatch.Groups[5].Value);
-                Test.SubItems.Add(MyMatch.Groups[4].Value);
-                Test.SubItems.Add(MyMatch.Groups[1].Value);
-                Test.SubItems.Add(MyMatch.Groups[2].Value);
-
-                lv.Items.Add(Test);
+                ListViewItem Item = new ListViewItem();
+                Item.Text = MyMatch.Groups[6].Value.PadLeft(6, '0');
+                Item.SubItems.Add(MyMatch.Groups[3].Value);
+                Item.SubItems.Add(MyMatch.Groups[7].Value);
+                Item.SubItems.Add(MyMatch.Groups[5].Value);
+                Item.SubItems.Add(MyMatch.Groups[4].Value);
+                Item.SubItems.Add(MyMatch.Groups[1].Value);
+                Item.SubItems.Add(MyMatch.Groups[2].Value);
 
                 Line = sr.ReadLine();
+
+                //If the option to hide empty slots is enabled, check if the ItemID is 000000, if it is, set the AddLine variable to false. 
+                if (Options.HideEmpty)
+                    if (Item.Text == "000000")
+                        AddLine = false;
+
+                if (AddLine)
+                    lv.Items.Add(Item);
+
+                //Reset AddLine variable 
+                AddLine = true;
             }
         }
 
@@ -360,19 +405,29 @@ namespace EQ_Inventory_Parser
                 MyMatch = ParseInventory.Match(Line);
 
                 var lv = (ListView)null;
+                bool AddLine = true;
                 lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[5].Controls.OfType<ListView>().First();
 
 
-                ListViewItem Test = new ListViewItem();
-                Test.Text = MyMatch.Groups[3].Value.PadLeft(6, '0');
-                Test.SubItems.Add(MyMatch.Groups[2].Value);
-                Test.SubItems.Add(MyMatch.Groups[4].Value);
-                Test.SubItems.Add(MyMatch.Groups[5].Value);
-                Test.SubItems.Add(MyMatch.Groups[1].Value);
-                
-                lv.Items.Add(Test);
+                ListViewItem Item = new ListViewItem();
+                Item.Text = MyMatch.Groups[3].Value.PadLeft(6, '0');
+                Item.SubItems.Add(MyMatch.Groups[2].Value);
+                Item.SubItems.Add(MyMatch.Groups[4].Value);
+                Item.SubItems.Add(MyMatch.Groups[5].Value);
+                Item.SubItems.Add(MyMatch.Groups[1].Value);
 
                 Line = sr.ReadLine();
+
+                //If the option to hide empty slots is enabled, check if the ItemID is 000000, if it is, set the AddLine variable to false. 
+                if (Options.HideEmpty)
+                    if (Item.Text == "000000")
+                        AddLine = false;
+
+                if (AddLine)
+                    lv.Items.Add(Item);
+
+                //Reset AddLine variable 
+                AddLine = true;
             }
         }
 
@@ -388,29 +443,71 @@ namespace EQ_Inventory_Parser
                 MyMatch = ParseRealEstate.Match(Line);
 
                 var lv = (ListView)null;
+                bool AddLine = true;
                 lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[6].Controls.OfType<ListView>().First();
 
 
-                ListViewItem Test = new ListViewItem();
-                Test.Text = MyMatch.Groups[6].Value.PadLeft(6, '0');
-                Test.SubItems.Add(MyMatch.Groups[3].Value);
-                Test.SubItems.Add(MyMatch.Groups[7].Value);
-                Test.SubItems.Add(MyMatch.Groups[5].Value);
-                Test.SubItems.Add(MyMatch.Groups[4].Value);
-                Test.SubItems.Add(MyMatch.Groups[1].Value);
-                Test.SubItems.Add(MyMatch.Groups[2].Value);
-
-                lv.Items.Add(Test);
+                ListViewItem Item = new ListViewItem();
+                Item.Text = MyMatch.Groups[6].Value.PadLeft(6, '0');
+                Item.SubItems.Add(MyMatch.Groups[3].Value);
+                Item.SubItems.Add(MyMatch.Groups[7].Value);
+                Item.SubItems.Add(MyMatch.Groups[5].Value);
+                Item.SubItems.Add(MyMatch.Groups[4].Value);
+                Item.SubItems.Add(MyMatch.Groups[1].Value);
+                Item.SubItems.Add(MyMatch.Groups[2].Value);
 
                 Line = sr.ReadLine();
+
+                //If the option to hide empty slots is enabled, check if the ItemID is 000000, if it is, set the AddLine variable to false. 
+                if (Options.HideEmpty)
+                    if (Item.Text == "000000")
+                        AddLine = false;
+
+                if (AddLine)
+                    lv.Items.Add(Item);
+
+                //Reset AddLine variable 
+                AddLine = true;
             }
         }
+
+        #endregion
 
         private void TSMI_Add_Character_Click(object sender, EventArgs e)
         {
             AddCharacter AddCharacter = new AddCharacter();
 
             AddCharacter.ShowDialog(this);
+        }
+
+        private void B_Test_Click(object sender, EventArgs e)
+        {
+            Directory = "C:\\EverQuest";
+
+            AddCharacterPage("Beimeith", "Xegony", "Machin Shin", Directory);
+            ParseFile("Beimeith", null, "Inventory", Directory);
+            ParseFile("Beimeith", null, "RealEstate", Directory);
+            ParseFile("Beimeith", null, "GuildBank", Directory);
+            ParseFile("Beimeith", "Machin Shin", "GuildRealEstate", Directory);
+
+            //   MessageBox.Show("");
+
+            //AddCharacterPage("Zephrina", "Xegony", "Machin Shin", Directory);
+            //ParseFile("Zephrina", null, "Inventory", Directory);
+            //ParseFile("Zephrina", null, "RealEstate", Directory);
+            //ParseFile("Zephrina", null, "GuildBank", Directory);
+            //ParseFile("Zephrina", "Machin Shin", "GuildRealEstate", Directory);
+
+            foreach (TabPage tp in SelectedCharacter.Controls.OfType<TabControl>().First().TabPages)
+                tp.Controls.OfType<ListView>().First().AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+
+        }
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings Settings = new Settings();
+
+            Settings.ShowDialog(this);
         }
     }
 }

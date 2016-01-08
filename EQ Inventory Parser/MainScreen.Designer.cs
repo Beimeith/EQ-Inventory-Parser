@@ -34,6 +34,10 @@
             this.TSMI_Add_Character = new System.Windows.Forms.ToolStripMenuItem();
             this.L_File_Loaded = new System.Windows.Forms.Label();
             this.B_Details = new System.Windows.Forms.Button();
+            this.B_Test = new System.Windows.Forms.Button();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.DD_Item_Search = new System.Windows.Forms.ComboBox();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -53,7 +57,8 @@
             // 
             this.menuStrip1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(145)))), ((int)(((byte)(180)))), ((int)(((byte)(245)))));
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem});
+            this.fileToolStripMenuItem,
+            this.optionsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(684, 24);
@@ -98,12 +103,54 @@
             this.B_Details.UseVisualStyleBackColor = true;
             this.B_Details.Click += new System.EventHandler(this.B_Details_Click);
             // 
+            // B_Test
+            // 
+            this.B_Test.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.B_Test.Location = new System.Drawing.Point(274, 635);
+            this.B_Test.Name = "B_Test";
+            this.B_Test.Size = new System.Drawing.Size(75, 23);
+            this.B_Test.TabIndex = 4;
+            this.B_Test.Text = "Test";
+            this.B_Test.UseVisualStyleBackColor = true;
+            this.B_Test.Click += new System.EventHandler(this.B_Test_Click);
+            // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.settingsToolStripMenuItem});
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.optionsToolStripMenuItem.Text = "&Options";
+            // 
+            // settingsToolStripMenuItem
+            // 
+            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.settingsToolStripMenuItem.Text = "&Settings";
+            this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
+            // 
+            // DD_Item_Search
+            // 
+            this.DD_Item_Search.FormattingEnabled = true;
+            this.DD_Item_Search.Items.AddRange(new object[] {
+            "EQ Items",
+            "EQ Resource",
+            "Lucy",
+            "Allakhazam"});
+            this.DD_Item_Search.Location = new System.Drawing.Point(470, 635);
+            this.DD_Item_Search.Name = "DD_Item_Search";
+            this.DD_Item_Search.Size = new System.Drawing.Size(121, 21);
+            this.DD_Item_Search.TabIndex = 5;
+            this.DD_Item_Search.Text = "EQ Items";
+            // 
             // MainScreen
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Silver;
             this.ClientSize = new System.Drawing.Size(684, 662);
+            this.Controls.Add(this.DD_Item_Search);
+            this.Controls.Add(this.B_Test);
             this.Controls.Add(this.B_Details);
             this.Controls.Add(this.L_File_Loaded);
             this.Controls.Add(this.TC_Player);
@@ -127,6 +174,10 @@
         private System.Windows.Forms.Label L_File_Loaded;
         private System.Windows.Forms.Button B_Details;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Add_Character;
+        private System.Windows.Forms.Button B_Test;
+        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
+        private System.Windows.Forms.ComboBox DD_Item_Search;
     }
 }
 

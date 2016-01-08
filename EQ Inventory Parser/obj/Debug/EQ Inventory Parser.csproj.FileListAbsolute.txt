@@ -8,3 +8,14 @@ c:\users\michael\documents\visual studio 2015\Projects\EQ Inventory Parser\EQ In
 c:\users\michael\documents\visual studio 2015\Projects\EQ Inventory Parser\EQ Inventory Parser\obj\Debug\EQ Inventory Parser.exe
 c:\users\michael\documents\visual studio 2015\Projects\EQ Inventory Parser\EQ Inventory Parser\obj\Debug\EQ Inventory Parser.pdb
 C:\Users\Michael\Documents\Visual Studio 2015\Projects\EQ Inventory Parser\EQ Inventory Parser\obj\Debug\EQ_Inventory_Parser.AddCharacter.resources
+C:\Users\Michael\Documents\GitHub\EQ-Inventory-Parser\EQ Inventory Parser\bin\Debug\EQ Inventory Parser.exe.config
+C:\Users\Michael\Documents\GitHub\EQ-Inventory-Parser\EQ Inventory Parser\bin\Debug\EQ Inventory Parser.exe
+C:\Users\Michael\Documents\GitHub\EQ-Inventory-Parser\EQ Inventory Parser\bin\Debug\EQ Inventory Parser.pdb
+C:\Users\Michael\Documents\GitHub\EQ-Inventory-Parser\EQ Inventory Parser\obj\Debug\EQ Inventory Parser.csprojResolveAssemblyReference.cache
+C:\Users\Michael\Documents\GitHub\EQ-Inventory-Parser\EQ Inventory Parser\obj\Debug\EQ_Inventory_Parser.AddCharacter.resources
+C:\Users\Michael\Documents\GitHub\EQ-Inventory-Parser\EQ Inventory Parser\obj\Debug\EQ_Inventory_Parser.MainScreen.resources
+C:\Users\Michael\Documents\GitHub\EQ-Inventory-Parser\EQ Inventory Parser\obj\Debug\EQ_Inventory_Parser.Properties.Resources.resources
+C:\Users\Michael\Documents\GitHub\EQ-Inventory-Parser\EQ Inventory Parser\obj\Debug\EQ Inventory Parser.csproj.GenerateResource.Cache
+C:\Users\Michael\Documents\GitHub\EQ-Inventory-Parser\EQ Inventory Parser\obj\Debug\EQ Inventory Parser.exe
+C:\Users\Michael\Documents\GitHub\EQ-Inventory-Parser\EQ Inventory Parser\obj\Debug\EQ Inventory Parser.pdb
+C:\Users\Michael\Documents\GitHub\EQ-Inventory-Parser\EQ Inventory Parser\obj\Debug\EQ_Inventory_Parser.Settings.resources
