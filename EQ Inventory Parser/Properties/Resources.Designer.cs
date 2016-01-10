@@ -8,10 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace EQ_Inventory_Parser.Properties
-{
-
-
+namespace EQ_Inventory_Parser.Properties {
+    using System;
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -22,49 +22,73 @@ namespace EQ_Inventory_Parser.Properties
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources
-    {
-
+    internal class Resources {
+        
         private static global::System.Resources.ResourceManager resourceMan;
-
+        
         private static global::System.Globalization.CultureInfo resourceCulture;
-
+        
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Resources()
-        {
+        internal Resources() {
         }
-
+        
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager
-        {
-            get
-            {
-                if ((resourceMan == null))
-                {
+        internal static global::System.Resources.ResourceManager ResourceManager {
+            get {
+                if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("EQ_Inventory_Parser.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
             }
         }
-
+        
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture
-        {
-            get
-            {
+        internal static global::System.Globalization.CultureInfo Culture {
+            get {
                 return resourceCulture;
             }
-            set
-            {
+            set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to *id|name
+        ///6504|Cage of Transmutation
+        ///8775|Collection Satchel
+        ///9579|Gleaming Ore Satchel
+        ///11517|Paladin Headhunting Satchel
+        ///11703|Box of Abu-Kar
+        ///12596|Silken Tapestry Satchel
+        ///13624|Fenith&apos;s Griffon Treat Kit
+        ///16689|Intricately Carved Box
+        ///17001|Wrist Pouch
+        ///17002|Belt Pouch
+        ///17003|Small Bag
+        ///17004|Large Bag
+        ///17005|Backpack
+        ///17006|Small Box
+        ///17007|Large Box
+        ///17008|Quiver
+        ///17009|Purse
+        ///17012|Tax Collection Box
+        ///17013|Hollow Skull
+        ///17014|Severed Paw
+        ///17017|Sarnak Head Pack
+        ///17018|Tome Binder
+        ///17019|Hollow S [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string BagList {
+            get {
+                return ResourceManager.GetString("BagList", resourceCulture);
             }
         }
     }

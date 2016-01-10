@@ -62,22 +62,28 @@ namespace EQ_Inventory_Parser
             MainScreen.AddCharacterPage(CharacterName, CharacterServer, CharacterGuild, EQDirectory);
 
             
-                MainScreen.ParseFile(CharacterName, null, "Inventory", EQDirectory);
+                MainScreen.CheckFile(CharacterName, null, "Inventory", EQDirectory);
 
             FileName = EQDirectory + "\\" + CharacterName + "-RealEstate.txt";
             if (File.Exists(FileName))
-                MainScreen.ParseFile(CharacterName, null, "RealEstate", EQDirectory);
+                MainScreen.CheckFile(CharacterName, null, "RealEstate", EQDirectory);
 
             FileName = EQDirectory + "\\" + CharacterName + "-GuildBank.txt";
             if (File.Exists(FileName))
-                MainScreen.ParseFile(CharacterName, null, "GuildBank", EQDirectory);
+                MainScreen.CheckFile(CharacterName, null, "GuildBank", EQDirectory);
 
             FileName = EQDirectory + "\\" + CharacterGuild + "-RealEstate.txt";
             if (File.Exists(FileName))
-                MainScreen.ParseFile(CharacterName, CharacterGuild, "GuildRealEstate", EQDirectory);
+                MainScreen.CheckFile(CharacterName, CharacterGuild, "GuildRealEstate", EQDirectory);
 
             foreach (TabPage tp in MainScreen.SelectedCharacter.Controls.OfType<TabControl>().First().TabPages)
-                tp.Controls.OfType<ListView>().First().AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+                for (int i = 0; i < tp.Controls.OfType<ListView>().First().Columns.Count; i++)
+                    if (tp.Controls.OfType<ListView>().First().Columns[i].Text == "Count" || tp.Controls.OfType<ListView>().First().Columns[i].Text == "Slots")
+                        tp.Controls.OfType<ListView>().First().Columns[i].AutoResize(ColumnHeaderAutoResizeStyle.HeaderSize);
+                    else
+                    {
+                        tp.Controls.OfType<ListView>().First().Columns[i].AutoResize(ColumnHeaderAutoResizeStyle.ColumnContent);
+                    }
         }
 
         private void B_AddCharacter_Cancel_Click(object sender, EventArgs e)

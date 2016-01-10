@@ -24,23 +24,29 @@ namespace EQ_Inventory_Parser
 
         Regex ParseInventory = new Regex("(?<1>.+)\t(?<2>.+)\t(?<3>.+)\t(?<4>.+)\t(?<5>.+)", RegexOptions.ExplicitCapture | RegexOptions.Compiled);
         Regex ParseRealEstate = new Regex("(?<1>.+)\t(?<2>.+)\t(?<3>.+)\t(?<4>.+)\t(?<5>.+)\t(?<6>.+)\t(?<7>.+)", RegexOptions.ExplicitCapture | RegexOptions.Compiled);
-
         Match MyMatch;
+
+        List<string> BagList = new List<string>();
+        Dictionary<string, string> GuildList = new Dictionary<string, string>();
 
         public TabPage SelectedCharacter;
         TabPage SelectedType;
+
+        string SelectedGuild;
 
         #endregion
 
         public MainScreen()
         {
             InitializeComponent();
-
+            LoadBagList();
             //Set Program Title
             Text = Title + " v" + ProgramVersion;
 
             //Add event handler for changing between characters.
             TC_Player.Selecting += new TabControlCancelEventHandler(TC_Player_Selecting);
+
+            
         }
 
         #region Add Pages and Controls
@@ -49,6 +55,13 @@ namespace EQ_Inventory_Parser
         {
             //Create a string with the new TabPage name based on the character name and server.
             string CharacterPageName = "TP_" + CharacterName + "_" + CharacterServer;
+
+            //Add the player and the player's guild to the GuildList.
+            if (!GuildList.ContainsKey(CharacterName))
+                GuildList.Add(CharacterName, CharacterGuild);
+
+            //Set the character's guild as the Selected Guild.
+            SelectedGuild = CharacterGuild;
 
             //Create the new TabPage with the PageName we set.
             TabPage NewCharacterPage = new TabPage(CharacterPageName);
@@ -61,6 +74,7 @@ namespace EQ_Inventory_Parser
             TC_Player.TabPages.Add(NewCharacterPage);
             TC_Player.SelectedTab = NewCharacterPage;
             SelectedCharacter = TC_Player.SelectedTab;
+            
 
             //Add in the Secondary TabControl for the new Character.
             AddSecondaryTabControl(CharacterName, CharacterServer, CharacterGuild, SelectedCharacter);
@@ -124,6 +138,7 @@ namespace EQ_Inventory_Parser
             NewListView.FullRowSelect = true;
             NewListView.GridLines = true;
             NewListView.Dock = DockStyle.Fill;
+            NewListView.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.GenericColumnSorter);
 
             //Add columns to the NewListView based on what type of page it is.
             switch (type)
@@ -135,17 +150,22 @@ namespace EQ_Inventory_Parser
                 case "SharedBank":
                     {
                         NewListView.Columns.Add("ID");
+                        NewListView.Columns[0].Tag = "Int";
                         NewListView.Columns.Add("Name");
                         NewListView.Columns.Add("Count");
+                        NewListView.Columns[2].Tag = "Int";
                         NewListView.Columns.Add("Slots");
+                        NewListView.Columns[3].Tag = "Int";
                         NewListView.Columns.Add("Location");
                         break;
                     }
                 case "GuildBank":
                     {
                         NewListView.Columns.Add("ID");
+                        NewListView.Columns[0].Tag = "Int";
                         NewListView.Columns.Add("Name");
                         NewListView.Columns.Add("Count");
+                        NewListView.Columns[2].Tag = "Int";
                         NewListView.Columns.Add("Permission");
                         NewListView.Columns.Add("Location");
 
@@ -155,8 +175,10 @@ namespace EQ_Inventory_Parser
                 case "GuildRealEstate":
                     {
                         NewListView.Columns.Add("ID");
+                        NewListView.Columns[0].Tag = "Int";
                         NewListView.Columns.Add("ItemName");
                         NewListView.Columns.Add("Count");
+                        NewListView.Columns[2].Tag = "Int";
                         NewListView.Columns.Add("Status");
                         NewListView.Columns.Add("ItemOwner");
                         NewListView.Columns.Add("RealEstateLocation");
@@ -176,11 +198,13 @@ namespace EQ_Inventory_Parser
         void TC_Player_Selecting(object sender, TabControlCancelEventArgs e)
         {
             SelectedCharacter = (sender as TabControl).SelectedTab;
+
+            if (GuildList.ContainsKey(SelectedCharacter.Text))
+                SelectedGuild = GuildList[SelectedCharacter.Text];
         }
 
         void TC_Type_Selecting(object sender, TabControlCancelEventArgs e)
         {
-
             SelectedType = SelectedCharacter.Controls
                 .OfType<TabControl>()
                 .First()
@@ -192,72 +216,114 @@ namespace EQ_Inventory_Parser
                 case "Bank":
                 case "SharedBank":
                 case "Gear":
-                    {
                         L_File_Loaded.Text = Directory + "\\" + SelectedCharacter.Text + "-Inventory.txt";
                         break;
-                    }
-                case "GuildBank":
-                    {
-                        L_File_Loaded.Text = Directory + "\\" + SelectedCharacter.Text + "-GuildBank.txt";
-                        break;
-                    }
-                case "RealEstate":
-                    {
+                case  "RealEstate":
                         L_File_Loaded.Text = Directory + "\\" + SelectedCharacter.Text + "-RealEstate.txt";
                         break;
-                    }
-                case "GuildRealEstate":
+                default:
                     {
-                        //L_File_Loaded.Text = EQDirectory + "\\" + SelectedCharacter. + "-RealEstate.txt";
+                        if (SelectedType.Text == SelectedGuild + " Guild Bank")
+                            L_File_Loaded.Text = Directory + "\\" + SelectedCharacter.Text + "-GuildBank.txt";
+                        else if (SelectedType.Text == SelectedGuild + " Real Estate")
+                            L_File_Loaded.Text = Directory + "\\" + SelectedGuild + "-RealEstate.txt";
                         break;
                     }
             }
 
             
+        }
+
+        private void GenericColumnSorter(object sender, ColumnClickEventArgs e)
+        {
+            var lv = sender as ListView;
+            var sort = lv.ListViewItemSorter as FlexibleListViewItemSorter;
+
+            // the tag property stores the default sorting mode: String, StringDesc, Int, IntDesc, Time, TimeDesc
+            var mode = (lv.Columns[e.Column].Tag ?? "").ToString();
+
+            // if the clicked column is already sorted, then reverse the sort
+            if (sort != null && e.Column == sort.Column && mode == sort.Mode)
+            {
+                sort.Reverse = !sort.Reverse;
+            }
+            else
+            {
+                // a new column was clicked
+                if (sort == null)
+                    sort = new FlexibleListViewItemSorter();
+                sort.Column = e.Column;
+                sort.Mode = mode;
+                sort.Reverse = false;
+                lv.ListViewItemSorter = sort;
+            }
+
+            lv.Sort();
+        }
+
+        private void LoadBagList()
+        {
+           var lines = Properties.Resources.BagList.Split('\n');
+            foreach (var line in lines)
+            {
+                // treat lines start with a * as comments
+                if (line.StartsWith("*"))
+                    continue;
+                var values = line.Trim();
+                if (values.Length < 2)
+                    continue;
+                BagList.Add(line.PadLeft(7,'0'));
+            }
         }
 
         private void B_Details_Click(object sender, EventArgs e)
         {
             String URL = "";
-            
-            //Check to ensure an item is selected on the Listview of the active Tabpage
-            if (SelectedType.Controls.OfType<ListView>().First().SelectedItems.Count > 0)
-            {
-                //Check to ensure the selected item is not an empty slot, if it is throw a notification the user is dumb
-                if (SelectedType.Controls.OfType<ListView>().First().SelectedItems[0].Text == "000000")
-                    MessageBox.Show("There is no item in this slot to show details for...", "Oops...", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-                //If not, put the ItemID into a string and open the url for that item id on EQitems with the default browser.
-                else
+
+            if (SelectedType != null)
+            {//Check to ensure an item is selected on the Listview of the active Tabpage
+                if (SelectedType.Controls.OfType<ListView>().First().SelectedItems.Count > 0)
                 {
-                    String ItemID = SelectedType.Controls
-                        .OfType<ListView>()
-                        .First()
-                        .SelectedItems[0].Text;
+                    //Check to ensure the selected item is not an empty slot, if it is throw a notification the user is dumb
+                    if (SelectedType.Controls.OfType<ListView>().First().SelectedItems[0].Text == "000000")
+                        MessageBox.Show("There is no item in this slot to show details for...", "Oops...", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+                    //If not, put the ItemID into a string and open the url for that item id on EQitems with the default browser.
+                    else
+                    {
+                        String ItemID = SelectedType.Controls
+                            .OfType<ListView>()
+                            .First()
+                            .SelectedItems[0].Text;
 
-                    String ItemName = SelectedType.Controls
-                        .OfType<ListView>()
-                        .First()
-                        .SelectedItems[0].SubItems[1].Text;
+                        String ItemName = SelectedType.Controls
+                            .OfType<ListView>()
+                            .First()
+                            .SelectedItems[0].SubItems[1].Text;
 
-                    if (DD_Item_Search.SelectedItem.ToString() == "EQ Items")
-                        URL = "http://items.sodeq.org/item.php?id=" + ItemID;
-                    else if (DD_Item_Search.SelectedItem.ToString() == "EQ Resource")
-                        URL = "http://items.eqresource.com/items.php?id=" + ItemID;
-                    else if (DD_Item_Search.SelectedItem.ToString() == "Lucy")
-                        URL = "http://lucy.allakhazam.com/item.html?id=" + ItemID;
-                    else if (DD_Item_Search.SelectedItem.ToString() == "Allakhazam")
-                        URL = "http://everquest.allakhazam.com/search.html?q=" + ItemName;
+                        if (DD_Item_Search.SelectedItem.ToString() == "EQ Items")
+                            URL = "http://items.sodeq.org/item.php?id=" + ItemID;
+                        else if (DD_Item_Search.SelectedItem.ToString() == "EQ Resource")
+                            URL = "http://items.eqresource.com/items.php?id=" + ItemID;
+                        else if (DD_Item_Search.SelectedItem.ToString() == "Lucy")
+                            URL = "http://lucy.allakhazam.com/item.html?id=" + ItemID;
+                        else if (DD_Item_Search.SelectedItem.ToString() == "Allakhazam")
+                            URL = "http://everquest.allakhazam.com/search.html?q=" + ItemName;
 
-                    System.Diagnostics.Process.Start(URL);
+                        System.Diagnostics.Process.Start(URL);
+                    }
                 }
+                //If nothing has been selected, throw a notification the user is dumb
+                else if (SelectedType.Controls.OfType<ListView>().First().SelectedItems.Count == 0)
+                    MessageBox.Show("You need to select an item to show details for...", "Oops...", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+            //If no file has been loaded at all, throw a notification the user is dumb
             }
-
-            
+            else
+                MessageBox.Show("You need to load a file first...", "Oops...", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
         }
 
         #region Parsing
 
-        public void ParseFile(string CharacterName, string GuildName, string Type, string EQDirectory)
+        public void CheckFile(string CharacterName, string GuildName, string Type, string EQDirectory)
         {
             string FileName = "";
 
@@ -275,202 +341,149 @@ namespace EQ_Inventory_Parser
             switch (Type)
             {
                 case "Inventory":
-                    {
-                        ParseInventoryFile(FileName);
+                        ParseFile(FileName, "Inventory");
                         break;
-                    }
                 case "RealEstate":
-                    {
-                        ParseRealEstateFile(FileName);
+                        ParseFile(FileName, "RealEstate");
                         break;
-                    }
                 case "GuildBank":
-                    {
-                        ParseGuildBankFile(FileName);
+                        ParseFile(FileName, "GuildBank");
                         break;
-                    }
                 case "GuildRealEstate":
-                    {
-                        ParseGuildRealEstateFile(FileName);
+                        ParseFile(FileName, "GuildRealEstate");
                         break;
-                    }
             }
         }
 
-        private void ParseInventoryFile(string FileName)
+        private void ParseFile(string FileName, string type)
         {
+            //Create the streamreader and read the first two lines because the first line is headings.
             StreamReader sr = new StreamReader(FileName, Encoding.UTF7);
-
             Line = sr.ReadLine();
             Line = sr.ReadLine();
-
+            
             //Create a list of which item slots will go into the Gear Tab. 
             List<string> Gear = new List<string> { "Charm", "Ear", "Head", "Face", "Neck", "Shoulders", "Arms", "Back", "Wrist", "Range", "Hands",
             "Primary", "Fingers", "Chest", "Legs", "Feet", "Waist", "Power Source", "Secondary", "Ammo", "Held"};
-
+            
             //Create an Empty Listview Variable, must be done outside the while statement.
             var lv = (ListView)null;
+            
+            //Create a boolean that controls whether the item in the current Line will be added to the listview. Default to true.
             bool AddLine = true;
+
             //While there is a line to parse,
             while (Line != null)
             {
-                //Check the Regex for the line,
-                MyMatch = ParseInventory.Match(Line);
-                //Check the line against the list of Gear item slots
-                int count = Gear.Count(w => MyMatch.Groups[1].Value.Contains(w));
-
-                //If the line contains one of the items in the list, set the listview variable to the Gear listview.
-                if (Gear.Any(MyMatch.Groups[1].Value.Contains))
-                    lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[0].Controls.OfType<ListView>().First();
-                else if (MyMatch.Groups[1].Value.Contains("General"))
-                    lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[1].Controls.OfType<ListView>().First();
-                else if (MyMatch.Groups[1].Value.Contains("Bank") && !MyMatch.Groups[1].Value.Contains("Shared"))
-                    lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[2].Controls.OfType<ListView>().First();
-                else if (MyMatch.Groups[1].Value.Contains("Shared"))
-                    lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[3].Controls.OfType<ListView>().First();
-
-                
-
+                //Create a new Listview Item
                 ListViewItem Item = new ListViewItem();
-                Item.Text = MyMatch.Groups[3].Value.PadLeft(6, '0');
-                Item.SubItems.Add(MyMatch.Groups[2].Value);
-                Item.SubItems.Add(MyMatch.Groups[4].Value);
-                Item.SubItems.Add(MyMatch.Groups[5].Value);
-                Item.SubItems.Add(MyMatch.Groups[1].Value);
 
-                Line = sr.ReadLine();
+                switch (type)
+                {
+                    case "Inventory":
+                        {
+                            //Check the Regex for the line,
+                            MyMatch = ParseInventory.Match(Line);
+
+                            //Check the line against the list of Gear item slots
+                            int count = Gear.Count(w => MyMatch.Groups[1].Value.Contains(w));
+
+                            //If the line contains one of the items in the list, set the listview variable to the Gear listview,
+                            if (Gear.Any(MyMatch.Groups[1].Value.Contains))
+                                lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[0].Controls.OfType<ListView>().First();
+                            //else if it contains the word General, set the listview variable to the General listview,
+                            else if (MyMatch.Groups[1].Value.Contains("General"))
+                                lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[1].Controls.OfType<ListView>().First();
+                            //else if it contains the word Bank, but not the word Shared, set the listview variable to the Bank listview,
+                            else if (MyMatch.Groups[1].Value.Contains("Bank") && !MyMatch.Groups[1].Value.Contains("Shared"))
+                                lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[2].Controls.OfType<ListView>().First();
+                            //else if it contains the word shared, set the listview bariable to the Shared Bank listview.
+                            else if (MyMatch.Groups[1].Value.Contains("Shared"))
+                                lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[3].Controls.OfType<ListView>().First();
+
+                            //Build the Listview item
+                            Item.Text = MyMatch.Groups[3].Value.PadLeft(6, '0');
+                            Item.SubItems.Add(MyMatch.Groups[2].Value);
+                            Item.SubItems.Add(MyMatch.Groups[4].Value);
+                            Item.SubItems.Add(MyMatch.Groups[5].Value);
+                            Item.SubItems.Add(MyMatch.Groups[1].Value);
+
+                            //If the option to hide bags is enabled, check if the BagList contains the ItemID, if it does, set the AddLine variable to false.
+                            if (Options.HideBags)
+                                if (BagList.Any(str => str.Contains(Item.Text)))
+                                    AddLine = false;
+                        }
+                        break;
+                    case "RealEstate":
+                        {
+                            //Set the listview variable to the RealEstate Listview.
+                            lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[4].Controls.OfType<ListView>().First();
+                            
+                            //Check the Regex for the line,
+                            MyMatch = ParseRealEstate.Match(Line);
+
+                            //Build the Listview item
+                            Item.Text = MyMatch.Groups[6].Value.PadLeft(6, '0');
+                            Item.SubItems.Add(MyMatch.Groups[3].Value);
+                            Item.SubItems.Add(MyMatch.Groups[7].Value);
+                            Item.SubItems.Add(MyMatch.Groups[5].Value);
+                            Item.SubItems.Add(MyMatch.Groups[4].Value);
+                            Item.SubItems.Add(MyMatch.Groups[1].Value);
+                            Item.SubItems.Add(MyMatch.Groups[2].Value);
+                        }
+                        break;
+                    case "GuildBank":
+                        {
+                            //Set the listview variable to the GuildBank Listview
+                            lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[5].Controls.OfType<ListView>().First();
+                            
+                            //Check the Regex for the line,
+                            MyMatch = ParseInventory.Match(Line);
+
+                            //Build the Listview item
+                            Item.Text = MyMatch.Groups[3].Value.PadLeft(6, '0');
+                            Item.SubItems.Add(MyMatch.Groups[2].Value);
+                            Item.SubItems.Add(MyMatch.Groups[4].Value);
+                            Item.SubItems.Add(MyMatch.Groups[5].Value);
+                            Item.SubItems.Add(MyMatch.Groups[1].Value);
+                        }
+                        break;
+                    case "GuildRealEstate":
+                        {
+                            //Set the listview variable to the GuildRealEstate Listview
+                            lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[6].Controls.OfType<ListView>().First();
+                            
+                            //Check the Regex for the line,
+                            MyMatch = ParseRealEstate.Match(Line);
+
+                            Item.Text = MyMatch.Groups[6].Value.PadLeft(6, '0');
+                            Item.SubItems.Add(MyMatch.Groups[3].Value);
+                            Item.SubItems.Add(MyMatch.Groups[7].Value);
+                            Item.SubItems.Add(MyMatch.Groups[5].Value);
+                            Item.SubItems.Add(MyMatch.Groups[4].Value);
+                            Item.SubItems.Add(MyMatch.Groups[1].Value);
+                            Item.SubItems.Add(MyMatch.Groups[2].Value);
+                        }
+                        break;
+                }
 
                 //If the option to hide empty slots is enabled, check if the ItemID is 000000, if it is, set the AddLine variable to false. 
                 if (Options.HideEmpty)
                     if (Item.Text == "000000")
                         AddLine = false;
 
+                //If AddLine is true, add the item to the Listview.
                 if (AddLine)
                     lv.Items.Add(Item);
 
                 //Reset AddLine variable 
                 AddLine = true;
-            }
-        }
 
-        private void ParseRealEstateFile(string FileName)
-        {
-            StreamReader sr = new StreamReader(FileName, Encoding.UTF7);
-
-            Line = sr.ReadLine();
-            Line = sr.ReadLine();
-
-            while (Line != null)
-            {
-                MyMatch = ParseRealEstate.Match(Line);
-
-                var lv = (ListView)null;
-                bool AddLine = true;
-                lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[4].Controls.OfType<ListView>().First();
-
-
-                ListViewItem Item = new ListViewItem();
-                Item.Text = MyMatch.Groups[6].Value.PadLeft(6, '0');
-                Item.SubItems.Add(MyMatch.Groups[3].Value);
-                Item.SubItems.Add(MyMatch.Groups[7].Value);
-                Item.SubItems.Add(MyMatch.Groups[5].Value);
-                Item.SubItems.Add(MyMatch.Groups[4].Value);
-                Item.SubItems.Add(MyMatch.Groups[1].Value);
-                Item.SubItems.Add(MyMatch.Groups[2].Value);
-
+                //Read the next line of the file. 
                 Line = sr.ReadLine();
-
-                //If the option to hide empty slots is enabled, check if the ItemID is 000000, if it is, set the AddLine variable to false. 
-                if (Options.HideEmpty)
-                    if (Item.Text == "000000")
-                        AddLine = false;
-
-                if (AddLine)
-                    lv.Items.Add(Item);
-
-                //Reset AddLine variable 
-                AddLine = true;
             }
         }
-
-        private void ParseGuildBankFile(string FileName)
-        {
-            StreamReader sr = new StreamReader(FileName, Encoding.UTF7);
-
-            Line = sr.ReadLine();
-            Line = sr.ReadLine();
-
-            while (Line != null)
-            {
-                MyMatch = ParseInventory.Match(Line);
-
-                var lv = (ListView)null;
-                bool AddLine = true;
-                lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[5].Controls.OfType<ListView>().First();
-
-
-                ListViewItem Item = new ListViewItem();
-                Item.Text = MyMatch.Groups[3].Value.PadLeft(6, '0');
-                Item.SubItems.Add(MyMatch.Groups[2].Value);
-                Item.SubItems.Add(MyMatch.Groups[4].Value);
-                Item.SubItems.Add(MyMatch.Groups[5].Value);
-                Item.SubItems.Add(MyMatch.Groups[1].Value);
-
-                Line = sr.ReadLine();
-
-                //If the option to hide empty slots is enabled, check if the ItemID is 000000, if it is, set the AddLine variable to false. 
-                if (Options.HideEmpty)
-                    if (Item.Text == "000000")
-                        AddLine = false;
-
-                if (AddLine)
-                    lv.Items.Add(Item);
-
-                //Reset AddLine variable 
-                AddLine = true;
-            }
-        }
-
-        private void ParseGuildRealEstateFile(string FileName)
-        {
-            StreamReader sr = new StreamReader(FileName, Encoding.UTF7);
-
-            Line = sr.ReadLine();
-            Line = sr.ReadLine();
-
-            while (Line != null)
-            {
-                MyMatch = ParseRealEstate.Match(Line);
-
-                var lv = (ListView)null;
-                bool AddLine = true;
-                lv = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[6].Controls.OfType<ListView>().First();
-
-
-                ListViewItem Item = new ListViewItem();
-                Item.Text = MyMatch.Groups[6].Value.PadLeft(6, '0');
-                Item.SubItems.Add(MyMatch.Groups[3].Value);
-                Item.SubItems.Add(MyMatch.Groups[7].Value);
-                Item.SubItems.Add(MyMatch.Groups[5].Value);
-                Item.SubItems.Add(MyMatch.Groups[4].Value);
-                Item.SubItems.Add(MyMatch.Groups[1].Value);
-                Item.SubItems.Add(MyMatch.Groups[2].Value);
-
-                Line = sr.ReadLine();
-
-                //If the option to hide empty slots is enabled, check if the ItemID is 000000, if it is, set the AddLine variable to false. 
-                if (Options.HideEmpty)
-                    if (Item.Text == "000000")
-                        AddLine = false;
-
-                if (AddLine)
-                    lv.Items.Add(Item);
-
-                //Reset AddLine variable 
-                AddLine = true;
-            }
-        }
-
+        
         #endregion
 
         private void TSMI_Add_Character_Click(object sender, EventArgs e)
@@ -485,10 +498,10 @@ namespace EQ_Inventory_Parser
             Directory = "C:\\EverQuest";
 
             AddCharacterPage("Beimeith", "Xegony", "Machin Shin", Directory);
-            ParseFile("Beimeith", null, "Inventory", Directory);
-            ParseFile("Beimeith", null, "RealEstate", Directory);
-            ParseFile("Beimeith", null, "GuildBank", Directory);
-            ParseFile("Beimeith", "Machin Shin", "GuildRealEstate", Directory);
+            CheckFile("Beimeith", null, "Inventory", Directory);
+            CheckFile("Beimeith", null, "RealEstate", Directory);
+            CheckFile("Beimeith", null, "GuildBank", Directory);
+            CheckFile("Beimeith", "Machin Shin", "GuildRealEstate", Directory);
 
             //   MessageBox.Show("");
 
@@ -499,7 +512,14 @@ namespace EQ_Inventory_Parser
             //ParseFile("Zephrina", "Machin Shin", "GuildRealEstate", Directory);
 
             foreach (TabPage tp in SelectedCharacter.Controls.OfType<TabControl>().First().TabPages)
-                tp.Controls.OfType<ListView>().First().AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+                for (int i = 0; i < tp.Controls.OfType<ListView>().First().Columns.Count; i++)
+                    if (tp.Controls.OfType<ListView>().First().Columns[i].Text == "Count" || tp.Controls.OfType<ListView>().First().Columns[i].Text == "Slots")
+                        tp.Controls.OfType<ListView>().First().Columns[i].AutoResize(ColumnHeaderAutoResizeStyle.HeaderSize);
+                    else
+                    {
+                        tp.Controls.OfType<ListView>().First().Columns[i].AutoResize(ColumnHeaderAutoResizeStyle.ColumnContent);
+                    }
+            
 
         }
 
