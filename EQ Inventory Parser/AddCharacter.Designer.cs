@@ -80,6 +80,7 @@
             this.B_AddCharacter_Browse.TabIndex = 2;
             this.B_AddCharacter_Browse.Text = "Browse";
             this.B_AddCharacter_Browse.UseVisualStyleBackColor = true;
+            this.B_AddCharacter_Browse.Click += new System.EventHandler(this.B_AddCharacter_Browse_Click);
             // 
             // TB_AddCharacter_EQ_Directory
             // 
@@ -87,7 +88,6 @@
             this.TB_AddCharacter_EQ_Directory.Name = "TB_AddCharacter_EQ_Directory";
             this.TB_AddCharacter_EQ_Directory.Size = new System.Drawing.Size(400, 20);
             this.TB_AddCharacter_EQ_Directory.TabIndex = 1;
-            this.TB_AddCharacter_EQ_Directory.Text = "C:\\Users\\Public\\Sony Online Entertainment\\Installed Games\\EverQuest";
             // 
             // L_AddCharacter_EQ_Directory
             // 
@@ -189,6 +189,5 @@
         internal System.Windows.Forms.Label L_AddCharacter_Character_Name;
         internal System.Windows.Forms.TextBox TB_AddCharacter_Server_Name;
         internal System.Windows.Forms.Label L_AddCharacter_Server_Name;
-
     }
 }

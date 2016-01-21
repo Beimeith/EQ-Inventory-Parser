@@ -106,6 +106,7 @@ namespace EQ_Inventory_Parser
             AddTypePage(CharacterName, CharacterServer, CharacterGuild, NewTabControl, "RealEstate");
             AddTypePage(CharacterName, CharacterServer, CharacterGuild, NewTabControl, "GuildBank");
             AddTypePage(CharacterName, CharacterServer, CharacterGuild, NewTabControl, "GuildRealEstate");
+            AddTypePage(CharacterName, CharacterServer, CharacterGuild, NewTabControl, "AllItems");
 
             //Set the first Type Page as the currently selected tab and SelectedType.
             NewTabControl.SelectedTab = NewTabControl.TabPages[0];
@@ -168,7 +169,6 @@ namespace EQ_Inventory_Parser
                         NewListView.Columns[2].Tag = "Int";
                         NewListView.Columns.Add("Permission");
                         NewListView.Columns.Add("Location");
-
                         break;
                     }
                 case "RealEstate":
@@ -183,6 +183,16 @@ namespace EQ_Inventory_Parser
                         NewListView.Columns.Add("ItemOwner");
                         NewListView.Columns.Add("RealEstateLocation");
                         NewListView.Columns.Add("RealEstateName");
+                        break;
+                    }
+                case "AllItems":
+                    {
+                        NewListView.Columns.Add("ID");
+                        NewListView.Columns[0].Tag = "Int";
+                        NewListView.Columns.Add("ItemName");
+                        NewListView.Columns.Add("Count");
+                        NewListView.Columns[2].Tag = "Int";
+                        NewListView.Columns.Add("Location");
                         break;
                     }
             }
@@ -366,9 +376,12 @@ namespace EQ_Inventory_Parser
             List<string> Gear = new List<string> { "Charm", "Ear", "Head", "Face", "Neck", "Shoulders", "Arms", "Back", "Wrist", "Range", "Hands",
             "Primary", "Fingers", "Chest", "Legs", "Feet", "Waist", "Power Source", "Secondary", "Ammo", "Held"};
             
-            //Create an Empty Listview Variable, must be done outside the while statement.
+            //Create an Empty Listview Variable, must be done outside the while statement as it can be changed.
             var lv = (ListView)null;
             
+            //Create a second empty Listview Variable for the All Items, this one can be set as it doesn't change.
+            var lv2 = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[7].Controls.OfType<ListView>().First();
+
             //Create a boolean that controls whether the item in the current Line will be added to the listview. Default to true.
             bool AddLine = true;
 
@@ -377,6 +390,9 @@ namespace EQ_Inventory_Parser
             {
                 //Create a new Listview Item
                 ListViewItem Item = new ListViewItem();
+                
+                //Create a second Listview Item for the AllItems Listview.
+                ListViewItem Item2 = new ListViewItem();
 
                 switch (type)
                 {
@@ -408,6 +424,12 @@ namespace EQ_Inventory_Parser
                             Item.SubItems.Add(MyMatch.Groups[5].Value);
                             Item.SubItems.Add(MyMatch.Groups[1].Value);
 
+                            //Build the AllItems Listview item
+                            Item2.Text = MyMatch.Groups[3].Value.PadLeft(6, '0');
+                            Item2.SubItems.Add(MyMatch.Groups[2].Value);
+                            Item2.SubItems.Add(MyMatch.Groups[4].Value);
+                            Item2.SubItems.Add(MyMatch.Groups[1].Value);
+
                             //If the option to hide bags is enabled, check if the BagList contains the ItemID, if it does, set the AddLine variable to false.
                             if (Options.HideBags)
                                 if (BagList.Any(str => str.Contains(Item.Text)))
@@ -430,6 +452,13 @@ namespace EQ_Inventory_Parser
                             Item.SubItems.Add(MyMatch.Groups[4].Value);
                             Item.SubItems.Add(MyMatch.Groups[1].Value);
                             Item.SubItems.Add(MyMatch.Groups[2].Value);
+
+                            //Build the AllItems Listview item
+                            Item2.Text = MyMatch.Groups[6].Value.PadLeft(6, '0');
+                            Item2.SubItems.Add(MyMatch.Groups[3].Value);
+                            Item2.SubItems.Add(MyMatch.Groups[7].Value);
+                            Item2.SubItems.Add(MyMatch.Groups[2].Value);
+
                         }
                         break;
                     case "GuildBank":
@@ -446,6 +475,13 @@ namespace EQ_Inventory_Parser
                             Item.SubItems.Add(MyMatch.Groups[4].Value);
                             Item.SubItems.Add(MyMatch.Groups[5].Value);
                             Item.SubItems.Add(MyMatch.Groups[1].Value);
+
+                            //Build the AllItems Listview item
+                            Item2.Text = MyMatch.Groups[3].Value.PadLeft(6, '0');
+                            Item2.SubItems.Add(MyMatch.Groups[2].Value);
+                            Item2.SubItems.Add(MyMatch.Groups[4].Value);
+                            Item2.SubItems.Add("Guild" + MyMatch.Groups[1].Value);
+
                         }
                         break;
                     case "GuildRealEstate":
@@ -463,6 +499,12 @@ namespace EQ_Inventory_Parser
                             Item.SubItems.Add(MyMatch.Groups[4].Value);
                             Item.SubItems.Add(MyMatch.Groups[1].Value);
                             Item.SubItems.Add(MyMatch.Groups[2].Value);
+
+                            //Build the AllItems Listview item
+                            Item2.Text = MyMatch.Groups[6].Value.PadLeft(6, '0');
+                            Item2.SubItems.Add(MyMatch.Groups[3].Value);
+                            Item2.SubItems.Add(MyMatch.Groups[7].Value);
+                            Item2.SubItems.Add(MyMatch.Groups[2].Value);
                         }
                         break;
                 }
@@ -472,9 +514,12 @@ namespace EQ_Inventory_Parser
                     if (Item.Text == "000000")
                         AddLine = false;
 
-                //If AddLine is true, add the item to the Listview.
+                //If AddLine is true, add the items to the Listviews.
                 if (AddLine)
+                {
                     lv.Items.Add(Item);
+                    lv2.Items.Add(Item2);
+                }
 
                 //Reset AddLine variable 
                 AddLine = true;

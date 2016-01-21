@@ -84,6 +84,7 @@
             this.Controls.Add(this.CB_HideEmpty);
             this.Controls.Add(this.CB_MoveEmpty);
             this.Name = "Settings";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Settings";
             this.ResumeLayout(false);
             this.PerformLayout();

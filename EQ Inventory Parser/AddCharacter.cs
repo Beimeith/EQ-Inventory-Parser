@@ -17,6 +17,8 @@ namespace EQ_Inventory_Parser
         public AddCharacter()
         {
             InitializeComponent();
+            //Set the default EQ path into the box.
+            TB_AddCharacter_EQ_Directory.Text = Options.DefaultPath;
         }
 
         private void B_AddCharacter_OK_Click(object sender, EventArgs e)
@@ -62,7 +64,7 @@ namespace EQ_Inventory_Parser
             MainScreen.AddCharacterPage(CharacterName, CharacterServer, CharacterGuild, EQDirectory);
 
             
-                MainScreen.CheckFile(CharacterName, null, "Inventory", EQDirectory);
+            MainScreen.CheckFile(CharacterName, null, "Inventory", EQDirectory);
 
             FileName = EQDirectory + "\\" + CharacterName + "-RealEstate.txt";
             if (File.Exists(FileName))
@@ -89,6 +91,16 @@ namespace EQ_Inventory_Parser
         private void B_AddCharacter_Cancel_Click(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void B_AddCharacter_Browse_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog FolderBrowser = new FolderBrowserDialog();
+            FolderBrowser.SelectedPath = Options.DefaultPath;
+            
+            if (FolderBrowser.ShowDialog() == DialogResult.OK)
+                TB_AddCharacter_EQ_Directory.Text = FolderBrowser.SelectedPath;
+
         }
     }
 }

@@ -19,5 +19,7 @@ namespace EQ_Inventory_Parser
         public static bool HideBank = false;
         public static bool HideInventory = false;
 
+        public static string DefaultPath = "C:\\Users\\Public\\Daybreak Game Company\\Installed Games\\EverQuest";
+
     }
 }
