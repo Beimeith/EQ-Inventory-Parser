@@ -106,7 +106,9 @@ namespace EQ_Inventory_Parser
             AddTypePage(CharacterName, CharacterServer, CharacterGuild, NewTabControl, "RealEstate");
             AddTypePage(CharacterName, CharacterServer, CharacterGuild, NewTabControl, "GuildBank");
             AddTypePage(CharacterName, CharacterServer, CharacterGuild, NewTabControl, "GuildRealEstate");
-            AddTypePage(CharacterName, CharacterServer, CharacterGuild, NewTabControl, "AllItems");
+
+            if (!Options.HideAllItems)
+                AddTypePage(CharacterName, CharacterServer, CharacterGuild, NewTabControl, "AllItems");
 
             //Set the first Type Page as the currently selected tab and SelectedType.
             NewTabControl.SelectedTab = NewTabControl.TabPages[0];
@@ -378,9 +380,12 @@ namespace EQ_Inventory_Parser
             
             //Create an Empty Listview Variable, must be done outside the while statement as it can be changed.
             var lv = (ListView)null;
-            
+
             //Create a second empty Listview Variable for the All Items, this one can be set as it doesn't change.
-            var lv2 = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[7].Controls.OfType<ListView>().First();
+            var lv2 = (ListView)null;
+
+            if (!Options.HideAllItems)
+                lv2 = SelectedCharacter.Controls.OfType<TabControl>().First().TabPages[7].Controls.OfType<ListView>().First();
 
             //Create a boolean that controls whether the item in the current Line will be added to the listview. Default to true.
             bool AddLine = true;
@@ -518,7 +523,8 @@ namespace EQ_Inventory_Parser
                 if (AddLine)
                 {
                     lv.Items.Add(Item);
-                    lv2.Items.Add(Item2);
+                    if (!Options.HideAllItems)
+                        lv2.Items.Add(Item2);
                 }
 
                 //Reset AddLine variable 

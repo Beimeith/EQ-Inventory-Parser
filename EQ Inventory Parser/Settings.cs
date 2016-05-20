@@ -16,12 +16,18 @@ namespace EQ_Inventory_Parser
         {
             InitializeComponent();
 
-            CB_MoveEmpty.Checked = Options.MoveEmpty;
             CB_HideEmpty.Checked = Options.HideEmpty;
-
-            CB_MoveBags.Checked = Options.MoveBags;
             CB_HideBags.Checked = Options.HideBags;
+            CB_HideAllItems.Checked = Options.HideAllItems;
         }
 
+        private void B_Close_Click(object sender, EventArgs e)
+        {
+            Options.HideEmpty = CB_HideEmpty.Checked;
+            Options.HideBags = CB_HideBags.Checked;
+            Options.HideAllItems = CB_HideAllItems.Checked;
+
+            Close();
+        }
     }
 }
